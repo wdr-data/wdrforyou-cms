@@ -11,7 +11,7 @@
             "DEBUG": "True",
         },
         "vpc_config" : {
-            "SubnetIds": [ "subnet-6022fc1d", "subnet-e46ee8a9", "subnet-7d107616" ], // use the private subnet
+            "SubnetIds": [ "subnet-6022fc1d", "subnet-e46ee8a9", "subnet-7d107616" ],
             "SecurityGroupIds": [ "sg-0e6f12a560361382e" ]
         }
     }

@@ -1,0 +1,18 @@
+{
+    "dev": {
+        "aws_region": "eu-central-1",
+        "django_settings": "main.settings",
+        "profile_name": "default",
+        "project_name": "newsforyou",
+        "runtime": "python3.6",
+        "keep_warm": false,
+        "s3_bucket": "newsforyou-zappa-jhoeke",
+        "environment_variables": {
+            "DEBUG": "True",
+        },
+        "vpc_config" : {
+            "SubnetIds": [ "subnet-6022fc1d", "subnet-e46ee8a9", "subnet-7d107616" ], // use the private subnet
+            "SecurityGroupIds": [ "sg-0e6f12a560361382e" ]
+        }
+    }
+}

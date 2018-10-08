@@ -1,0 +1,20 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+"boto3" = "*"
+django = "*"
+djangorestframework = "*"
+django-emoji-picker = "*"
+django-filter = "*"
+django-tz-detect = "*"
+"django-s3-storage" = "*"
+"psycopg2" = "*"
+
+[dev-packages]
+zappa = "*"
+
+[requires]
+python_version = "3.6"

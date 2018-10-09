@@ -9,10 +9,11 @@ env:
   global:
     - AWS_REGION=eu-central-1
 
-cache: yarn
+cache: pip
 
-script:
-- echo "No tests :)"
+install:
+  - pip install pipenv
+  - pipenv sync
 
 deploy:
   - provider: script

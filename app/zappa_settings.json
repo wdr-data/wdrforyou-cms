@@ -2,8 +2,7 @@
     "dev": {
         "aws_region": "eu-central-1",
         "django_settings": "main.settings",
-        "profile_name": "default",
-        "project_name": "newsforyou",
+        "project_name": "newsforyou-cms",
         "runtime": "python3.6",
         "keep_warm": false,
         "s3_bucket": "newsforyou-zappa-jhoeke",

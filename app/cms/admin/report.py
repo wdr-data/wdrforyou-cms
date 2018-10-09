@@ -42,12 +42,6 @@ class ReportAdmin(admin.ModelAdmin):
     
     inlines = (ReportTranslationAdminInline, )
 
-    def save_model(self, request, obj, form, change):
-        obj.modified = timezone.now()
-        if obj.published and obj.published_date is None:
-            obj.published_date = timezone.now()
-
-        super().save_model(request, obj, form, change)
 
 # Register your models here.
 admin.site.register(Report, ReportAdmin)

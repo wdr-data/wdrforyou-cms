@@ -15,6 +15,9 @@ install:
   - pip install pipenv
   - pipenv sync
 
+script:
+  - echo "No tests :)"
+
 deploy:
   - provider: script
     skip_cleanup: true

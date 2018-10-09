@@ -18,6 +18,6 @@ install:
 deploy:
   - provider: script
     skip_cleanup: true
-    script: cd app && zappa update && ./manage.py collectstatic --noinput && zappa manage dev "migrate"
+    script: cd app && pipenv run zappa update && pipenv run ./manage.py collectstatic --noinput && pipenv run zappa manage dev "migrate"
     on:
       branch: master

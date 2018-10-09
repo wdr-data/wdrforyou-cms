@@ -1,0 +1,22 @@
+language: python
+
+sudo: false
+
+python:
+- "3.6"
+
+env:
+  global:
+    - AWS_REGION=eu-central-1
+
+cache: yarn
+
+script:
+- echo "No tests :)"
+
+deploy:
+  - provider: script
+    skip_cleanup: true
+    script: cd app && zappa update && ./manage.py collectstatic --noinput && zappa manage dev "migrate"
+    on:
+      branch: master

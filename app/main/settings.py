@@ -150,7 +150,7 @@ if AWS_LAMBDA:
     S3_BUCKET_NAME = os.environ['S3_BUCKET_NAME']
 
     DEFAULT_FILE_STORAGE = 'django_s3_storage.storage.S3Storage'
-    STATICFILES_STORAGE = 'django_s3_storage.storage.StaticS3Storage'
+    STATICFILES_STORAGE = 'django_s3_storage.storage.StaticManifestS3Storage'
 
     AWS_S3_BUCKET_NAME = S3_BUCKET_NAME
     AWS_S3_BUCKET_NAME_STATIC = S3_BUCKET_NAME

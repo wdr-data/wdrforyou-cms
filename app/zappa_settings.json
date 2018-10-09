@@ -7,7 +7,7 @@
         "runtime": "python3.6",
         "keep_warm": false,
         "s3_bucket": "newsforyou-zappa-jhoeke",
-        "remote_env": "s3://newsforyou-config-jhoeke/master/env.json",
+        "remote_env": "s3://newsforyou-cms-config-jhoeke/master/env.json",
         "vpc_config" : {
             "SubnetIds": [ "subnet-6022fc1d", "subnet-e46ee8a9", "subnet-7d107616" ],
             "SecurityGroupIds": [ "sg-0e6f12a560361382e" ]

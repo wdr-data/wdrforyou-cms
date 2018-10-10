@@ -12,6 +12,7 @@ django-filter = "*"
 django-tz-detect = "*"
 "django-s3-storage" = "*"
 "psycopg2" = "*"
+requests = "*"
 
 [dev-packages]
 zappa = "*"

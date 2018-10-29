@@ -13,6 +13,7 @@ Copy `.env.sample` to `.env` and make adjustments if necessary.
 
 Enable pipenv shell:
 ```bash
+$ pipenv sync --dev
 $ pipenv shell
 ```
 

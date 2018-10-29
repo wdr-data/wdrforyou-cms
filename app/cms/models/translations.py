@@ -1,7 +1,8 @@
 from django.db import models
+from .attachment import Attachment
 
 
-class Translation(models.Model):
+class Translation(Attachment):
 
     class Meta:
         verbose_name = 'Übersetzung'

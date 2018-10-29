@@ -12,6 +12,7 @@ import requests
 
 from ..models.report import Report, ReportTranslation
 from .translation import TranslationModelForm, TranslationAdminInline
+from .attachment import AttachmentAdmin
 
 PUSH_TRIGGER_URL = urljoin(os.environ['BOT_SERVICE_ENDPOINT'], 'sendReport')
 
@@ -19,7 +20,7 @@ class ReportTranslationModelForm(TranslationModelForm):
 
     class Meta:
         model = ReportTranslation
-        fields = ['language', 'text']
+        fields = ['language', 'text', 'media', 'media_original', 'media_note']
 
 
 class ReportTranslationAdminInline(TranslationAdminInline):
@@ -43,9 +44,10 @@ class ReportModelForm(forms.ModelForm):
     class Meta:
         model = Report
         fields = ['created', 'published', 'delivered',
-            'headline', 'arabic', 'persian', 'english', 'text']
+            'headline', 'arabic', 'persian', 'english', 'text', 
+            'media', 'media_original', 'media_note']
 
-class ReportAdmin(admin.ModelAdmin):
+class ReportAdmin(AttachmentAdmin):
     form = ReportModelForm
     inlines = (ReportTranslationAdminInline, )
 

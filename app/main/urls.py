@@ -16,6 +16,8 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from django.conf.urls import url
+from django.conf import settings
+from django.conf.urls.static import static
 
 from api.urls import router
 
@@ -24,3 +26,6 @@ urlpatterns = [
     url(r'^api/v1/', include(router.urls)),
     url(r'^tz_detect/', include('tz_detect.urls')),
 ]
+
+if settings.MEDIA_URL and settings.MEDIA_ROOT:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

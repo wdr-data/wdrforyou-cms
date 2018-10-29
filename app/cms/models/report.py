@@ -2,8 +2,10 @@ from django.utils import timezone
 from django.db import models
 
 from .translations import Translation
+from .attachment import Attachment
 
-class Report(models.Model):
+
+class Report(Attachment):
     """
     Meldungen sind themenbezogene, in sich abgeschlossene Nachrichten.</p><p>
     Sie enthalten eine Information auf Deutsch. Zudem können Fragmente mit der Übersetzung 
@@ -53,6 +55,7 @@ class Report(models.Model):
             reports = reports.order_by('-id')
 
         return reports[offset:count]
+
 
 class ReportTranslation(Translation):
 

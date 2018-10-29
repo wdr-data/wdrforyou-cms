@@ -13,6 +13,7 @@ django-tz-detect = "*"
 "django-s3-storage" = "*"
 "psycopg2" = "*"
 requests = "*"
+pillow = "*"
 
 [dev-packages]
 zappa = "*"

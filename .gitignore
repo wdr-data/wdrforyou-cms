@@ -105,3 +105,4 @@ venv.bak/
 
 # Django static files
 static
+/app/media/

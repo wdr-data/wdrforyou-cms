@@ -11,7 +11,7 @@ class ReportSerializer(ModelSerializerWithTranslations):
     class Meta:
         model = Report
         fields = ('id', 'created', 'published', 'delivered', 'headline', 'text',
-            'german', 'arabic', 'persian', 'english')
+            'german', 'arabic', 'persian', 'english', 'media', 'media_original', 'media_note', )
 
 
 class ReportViewSet(viewsets.ModelViewSet):

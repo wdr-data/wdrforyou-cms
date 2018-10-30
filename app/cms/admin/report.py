@@ -44,7 +44,7 @@ class ReportModelForm(forms.ModelForm):
     class Meta:
         model = Report
         fields = ['created', 'published', 'delivered',
-            'headline', 'arabic', 'persian', 'english', 'text', 
+            'headline', 'arabic', 'persian', 'english', 'text', 'link', 
             'media', 'media_original', 'media_note']
 
 class ReportAdmin(AttachmentAdmin):

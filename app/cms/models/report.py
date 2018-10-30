@@ -35,6 +35,9 @@ class Report(Attachment):
         'Text Deutsch', max_length=640, null=False,
         help_text='Hier die Meldung auf Deutsch eingeben. Die Übersetzung zu anderen Sprachen '
             'wird weiter unten eingegeben, falls nötig.')
+    link = models.CharField(
+        'Link', max_length=1024, null=True, blank=True,
+        help_text='Hier eine Link-URL eintragen, wird als Button an die Push-Nachricht angehängt.')
 
     def __str__(self):
         return self.headline

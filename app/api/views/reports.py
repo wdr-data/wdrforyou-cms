@@ -10,7 +10,7 @@ class ReportSerializer(ModelSerializerWithTranslations):
 
     class Meta:
         model = Report
-        fields = ('id', 'created', 'published', 'delivered', 'headline', 'text',
+        fields = ('id', 'created', 'published', 'delivered', 'headline', 'text', 'link',
             'german', 'arabic', 'persian', 'english', 'media', 'media_original', 'media_note', )
 
 

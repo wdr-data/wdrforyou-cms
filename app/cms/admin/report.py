@@ -4,7 +4,6 @@ from posixpath import join as urljoin
 
 from django.contrib import admin, messages
 from django.db import transaction
-from django.utils import timezone
 from django import forms
 from emoji_picker.widgets import EmojiPickerTextInput
 from emoji_picker.widgets import EmojiPickerTextarea
@@ -16,6 +15,7 @@ from .attachment import AttachmentAdmin
 
 PUSH_TRIGGER_URL = urljoin(os.environ['BOT_SERVICE_ENDPOINT'], 'sendReport')
 
+
 class ReportTranslationModelForm(TranslationModelForm):
 
     class Meta:
@@ -23,11 +23,53 @@ class ReportTranslationModelForm(TranslationModelForm):
         fields = ['language', 'text', 'media', 'media_original', 'media_note']
 
 
+class ReportTranslationInlineFormset(forms.models.BaseInlineFormSet):
+    def is_valid(self):
+        return super().is_valid() and not any([bool(e) for e in self.errors])
+
+    def clean(self):
+
+        super().clean()
+
+        if not self.instance.published:
+            return
+
+        # get forms that actually have valid data
+        filled_translations = []
+
+        for form in self.forms:
+            try:
+                if form.cleaned_data and not form.cleaned_data.get('DELETE', False):
+                    filled_translations.append(form.cleaned_data['language'])
+            except AttributeError:
+                # annoyingly, if a subform is invalid Django explicity raises
+                # an AttributeError for cleaned_data
+                pass
+
+        required_translations = [
+            language for language in ('english', 'arabic', 'persian')
+            if getattr(self.instance, language)
+        ]
+
+        missing_translations = []
+
+        for required_translation in required_translations:
+            if required_translation not in filled_translations:
+                missing_translations.append(required_translation)
+
+        if missing_translations:
+            raise forms.ValidationError(
+                "Fehlende Übersetzungen: " +
+                ', '.join(l.capitalize() for l in missing_translations))
+
+
 class ReportTranslationAdminInline(TranslationAdminInline):
     model = ReportTranslation
     form = ReportTranslationModelForm
+    formset = ReportTranslationInlineFormset
 
     extra = 1
+
 
 class ReportModelForm(forms.ModelForm):
 
@@ -46,6 +88,7 @@ class ReportModelForm(forms.ModelForm):
         fields = ['created', 'published', 'delivered',
             'headline', 'arabic', 'persian', 'english', 'text', 'link', 
             'media', 'media_original', 'media_note']
+
 
 class ReportAdmin(AttachmentAdmin):
     form = ReportModelForm

@@ -8,6 +8,7 @@ python:
 env:
   global:
     - AWS_REGION=eu-central-1
+    - S3_BUCKET_NAME=newsforyou-static-staging
     - SECRET_KEY=a
     - BOT_SERVICE_ENDPOINT=https://example.com/
 

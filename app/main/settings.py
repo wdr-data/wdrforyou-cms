@@ -36,6 +36,7 @@ if not DEBUG:
     SECURE_SSL_REDIRECT = True
 
 AWS_LAMBDA = os.environ.get('SERVERTYPE') == 'AWS Lambda'
+CI = os.environ.get('CI')
 
 # Application definition
 
@@ -147,7 +148,7 @@ LOGIN_URL = '/admin/login'
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.1/howto/static-files/
 
-if AWS_LAMBDA:
+if AWS_LAMBDA or CI:
     S3_BUCKET_NAME = os.environ['S3_BUCKET_NAME']
 
     DEFAULT_FILE_STORAGE = 'django_s3_storage.storage.S3Storage'

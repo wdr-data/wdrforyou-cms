@@ -23,6 +23,12 @@ script:
 deploy:
   - provider: script
     skip_cleanup: true
-    script: cd app && zappa update && zappa manage dev "migrate" && ./manage.py collectstatic --noinput
+    script: cd app && zappa update staging && zappa manage staging "migrate" && ./manage.py collectstatic --noinput
     on:
       branch: master
+
+  - provider: script
+    skip_cleanup: true
+    script: cd app && zappa update prod && zappa manage prod "migrate" && ./manage.py collectstatic --noinput
+    on:
+      branch: production

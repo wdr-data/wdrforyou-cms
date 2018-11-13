@@ -11,5 +11,18 @@
             "SubnetIds": [ "subnet-6022fc1d", "subnet-e46ee8a9", "subnet-7d107616" ],
             "SecurityGroupIds": [ "sg-0e6f12a560361382e" ]
         }
+    },
+    "staging": {
+        "aws_region": "eu-central-1",
+        "django_settings": "main.settings",
+        "project_name": "newsforyou-cms",
+        "runtime": "python3.6",
+        "keep_warm": true,
+        "s3_bucket": "newsforyou-zappa-staging",
+        "remote_env": "s3://newsforyou-cms-config/master/env.json",
+        "vpc_config" : {
+            "SubnetIds": [ "subnet-f93ff784", "subnet-ff209db2", "subnet-7c2abc17" ],
+            "SecurityGroupIds": [ "sg-05ba59e5bb294c372" ]
+        }
     }
 }

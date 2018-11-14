@@ -18,4 +18,4 @@ class Translation(Attachment):
             (ARABIC, 'Arabisch'),
             (PERSIAN, 'Persisch'),
             (ENGLISH, 'Englisch')])
-    text = models.CharField('Text Übersetzung', max_length=640, null=False, blank=False)
+    text = models.CharField('Text Übersetzung', max_length=628, null=False, blank=False)

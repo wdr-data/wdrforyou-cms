@@ -32,7 +32,7 @@ class Report(Attachment):
     persian = models.BooleanField('Persisch', null=False, blank=True, default=False)
     english = models.BooleanField('Englisch', null=False, blank=True, default=False)
     text = models.CharField(
-        'Text Deutsch', max_length=640, null=False,
+        'Text Deutsch', max_length=628, null=False,
         help_text='Hier die Meldung auf Deutsch eingeben. Die Übersetzung zu anderen Sprachen '
             'wird weiter unten eingegeben, falls nötig.')
     link = models.CharField(

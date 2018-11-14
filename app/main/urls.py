@@ -18,6 +18,7 @@ from django.urls import path, include
 from django.conf.urls import url
 from django.conf import settings
 from django.conf.urls.static import static
+from django.views.generic.base import RedirectView
 
 from api.urls import router
 
@@ -25,6 +26,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     url(r'^api/v1/', include(router.urls)),
     url(r'^tz_detect/', include('tz_detect.urls')),
+    url(r'^$', RedirectView.as_view(url='/admin')),
 ]
 
 if settings.MEDIA_URL and settings.MEDIA_ROOT:

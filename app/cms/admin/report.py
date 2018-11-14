@@ -20,7 +20,7 @@ class ReportTranslationModelForm(TranslationModelForm):
 
     class Meta:
         model = ReportTranslation
-        fields = ['language', 'text', 'media', 'media_original', 'media_note']
+        fields = ['language', 'text', 'link', 'media', 'media_original', 'media_note']
 
 
 class ReportTranslationInlineFormset(forms.models.BaseInlineFormSet):

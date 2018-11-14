@@ -6,7 +6,7 @@ from cms.models.report import ReportTranslation
 class ReportTranslationSerializer(serializers.ModelSerializer):
     class Meta:
         model = ReportTranslation
-        fields = ('id', 'language', 'text', 'media', 'media_original', 'media_note', )
+        fields = ('id', 'language', 'text', 'link', 'media', 'media_original', 'media_note', )
 
 
 class ReportTranslationViewSet(viewsets.ModelViewSet):

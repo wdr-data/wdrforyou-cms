@@ -19,3 +19,6 @@ class Translation(Attachment):
             (PERSIAN, 'Persisch'),
             (ENGLISH, 'Englisch')])
     text = models.CharField('Text Übersetzung', max_length=628, null=False, blank=False)
+    link = models.CharField(
+        'Link', max_length=1024, null=True, blank=True,
+        help_text='Hier eine Link-URL eintragen, wird als Button an die Push-Nachricht angehängt.')

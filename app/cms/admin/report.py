@@ -92,7 +92,19 @@ class ReportModelForm(forms.ModelForm):
 
 class ReportAdmin(AttachmentAdmin):
     form = ReportModelForm
+    list_display = ('published', 'delivered', 'headline', 'created', 'translations',)
+    list_display_links = ('headline', )
     inlines = (ReportTranslationAdminInline, )
+
+    def translations(self, obj):
+        languages = [
+            language for language in ('english', 'arabic', 'persian')
+            if getattr(obj, language)
+        ]
+        translated_languages = [
+            t.language for t in obj.translations.all()
+        ]
+        return [('✅ ' if l in translated_languages else '❌ ') + l.capitalize() for l in languages]
 
     def save_model(self, request, obj, form, change):
         super().save_model(request, obj, form, change)
@@ -118,6 +130,8 @@ class ReportAdmin(AttachmentAdmin):
         except Exception as e:
             messages.error(request, str(e))
 
+
+ReportAdmin.translations.short_description = 'Übersetzungen'
 
 # Register your models here.
 admin.site.register(Report, ReportAdmin)

@@ -27,6 +27,7 @@ urlpatterns = [
     url(r'^api/v1/', include(router.urls)),
     url(r'^tz_detect/', include('tz_detect.urls')),
     url(r'^$', RedirectView.as_view(url='/admin')),
+    url(r'^s3direct/', include('s3direct.urls')),
 ]
 
 if settings.MEDIA_URL and settings.MEDIA_ROOT:

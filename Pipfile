@@ -14,6 +14,7 @@ django-tz-detect = "*"
 "psycopg2" = "*"
 requests = "*"
 pillow = "*"
+"django-s3direct" = "*"
 
 [dev-packages]
 zappa = "*"

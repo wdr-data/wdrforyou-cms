@@ -119,7 +119,6 @@ class ReportAdmin(AttachmentAdmin):
     def save_model(self, request, obj, form, change):
         super().save_model(request, obj, form, change)
 
-<<<<<<< HEAD
         all_messages = messages.get_messages(request)
 
         errors = [msg for msg in all_messages if msg.level == messages.ERROR]
@@ -129,8 +128,6 @@ class ReportAdmin(AttachmentAdmin):
             messages.add_message(
                 request, message.level, message.message, extra_tags=message.extra_tags)
     
-=======
->>>>>>> master
         try:
             if obj.published and not obj.delivered and not errors:
 

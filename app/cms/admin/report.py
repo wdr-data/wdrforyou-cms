@@ -75,7 +75,7 @@ class ReportModelForm(forms.ModelForm):
 
     headline = forms.CharField(
         label='Überschrift',
-        help_text="Überschrift für die Meldungen-Liste eintragen",
+        help_text="Überschrift für die Meldungen-Liste eintragen.",
         widget=EmojiPickerTextInput,
         max_length=200)
 

@@ -119,8 +119,20 @@ class ReportAdmin(AttachmentAdmin):
     def save_model(self, request, obj, form, change):
         super().save_model(request, obj, form, change)
 
+<<<<<<< HEAD
+        all_messages = messages.get_messages(request)
+
+        errors = [msg for msg in all_messages if msg.level == messages.ERROR]
+
+        # Getting messages from the request deletes them, so we have to re-add them
+        for message in all_messages:
+            messages.add_message(
+                request, message.level, message.message, extra_tags=message.extra_tags)
+    
+=======
+>>>>>>> master
         try:
-            if obj.published and not obj.delivered:
+            if obj.published and not obj.delivered and not errors:
 
                 def commit_hook():
                     sleep(1)  # Wait for DB
@@ -136,6 +148,10 @@ class ReportAdmin(AttachmentAdmin):
                         messages.error(request, '🚨 Nachricht konnte nicht gesendet werden!')
 
                 transaction.on_commit(commit_hook)
+
+            elif obj.published and not obj.delivered and errors:
+                messages.warning(
+                    request, 'Nachricht wurde nicht versendet, da Fehler aufgetreten sind')
 
         except Exception as e:
             messages.error(request, str(e))

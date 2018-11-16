@@ -25,7 +25,12 @@ class Attachment(models.Model):
         abstract = True
 
     media_original = S3DirectField('Medien-Anhang', null=True, blank=True, dest='default')
-    media_note = models.CharField('Credit', max_length=100, null=True, blank=True)
+    media_note = models.CharField(
+        'Credit',
+        help_text="Bei Foto-Anhang hier die Quelle eintragen. Wird auf dem Foto angezeigt.",
+        max_length=100,
+        null=True,
+        blank=True)
 
     media = models.FileField('Verarbeitet', null=True, blank=True)
 

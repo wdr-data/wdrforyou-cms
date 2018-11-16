@@ -8,7 +8,7 @@ from .attachment import Attachment
 class Report(Attachment):
     """
     Meldungen sind themenbezogene, in sich abgeschlossene Nachrichten.</p><p>
-    Sie enthalten eine Information auf Deutsch. Zudem können Fragmente mit der Übersetzung 
+    Sie enthalten eine Information auf Deutsch. Zudem können Fragmente mit der Übersetzung
     zu weiteren Sprachen enthalten sein.
     """
 
@@ -16,7 +16,7 @@ class Report(Attachment):
         verbose_name = 'Meldung'
         verbose_name_plural = 'Meldungen'
         ordering = ['-created']
-    
+
     published = models.BooleanField(
         'Freigegeben', null=False, default=False,
         help_text='Solange dieser Haken nicht gesetzt ist, wird diese Meldung nicht versendet.')
@@ -25,16 +25,29 @@ class Report(Attachment):
     created = models.DateTimeField(
         'Erstellt',
         default=timezone.now)
-    
+
     headline = models.CharField('Titel', max_length=200, null=False)
     german = models.BooleanField('Deutsch', null=False, blank=True, default=False)
-    arabic = models.BooleanField('Arabisch', null=False, blank=True, default=False)
-    persian = models.BooleanField('Persisch', null=False, blank=True, default=False)
-    english = models.BooleanField('Englisch', null=False, blank=True, default=False)
-    text = models.CharField(
-        'Text Deutsch', max_length=628, null=False,
-        help_text='Hier die Meldung auf Deutsch eingeben. Die Übersetzung zu anderen Sprachen '
-            'wird weiter unten eingegeben, falls nötig.')
+    arabic = models.BooleanField(
+        'Arabisch',
+        help_text="Soll auf Arabisch übersetzt werden",
+        null=False,
+        blank=True,
+        default=False)
+    persian = models.BooleanField(
+        'Persisch',
+        help_text="Soll auf Persisch übersetzt werden",
+        null=False,
+        blank=True,
+        default=False)
+    english = models.BooleanField(
+        'Englisch',
+        help_text="Soll auf Englisch übersetzt werden",
+        null=False,
+        blank=True,
+        default=False)
+
+    text = models.CharField('Text Deutsch', max_length=628, null=False)
     link = models.CharField(
         'Link', max_length=1024, null=True, blank=True,
         help_text='Hier eine Link-URL eintragen, wird als Button an die Push-Nachricht angehängt.')

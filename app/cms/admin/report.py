@@ -73,9 +73,19 @@ class ReportTranslationAdminInline(TranslationAdminInline):
 
 class ReportModelForm(forms.ModelForm):
 
-    headline = forms.CharField(label='Überschrift', widget=EmojiPickerTextInput, max_length=200)
+    headline = forms.CharField(
+        label='Überschrift',
+        help_text="Überschrift für die Meldungen-Liste eintragen",
+        widget=EmojiPickerTextInput,
+        max_length=200)
+
     text = forms.CharField(
-        required=True, label="Text Deutsch", widget=EmojiPickerTextarea, max_length=640)
+        required=True,
+        label="Text Deutsch",
+        help_text="Hier nur die Meldung auf Deutsch eintragen. "
+            "Die Übersetzung zu anderen Sprachen wird weiter unten eingegeben, falls nötig.",
+        widget=EmojiPickerTextarea,
+        max_length=640)
 
     delivered = forms.BooleanField(
         label='Versendet',
@@ -86,7 +96,7 @@ class ReportModelForm(forms.ModelForm):
     class Meta:
         model = Report
         fields = ['published', 'delivered',
-            'headline', 'arabic', 'persian', 'english', 'text', 'link', 
+            'headline', 'arabic', 'persian', 'english', 'text', 'link',
             'media', 'media_original', 'media_note']
 
 
@@ -108,7 +118,7 @@ class ReportAdmin(AttachmentAdmin):
 
     def save_model(self, request, obj, form, change):
         super().save_model(request, obj, form, change)
-    
+
         try:
             if obj.published and not obj.delivered:
 

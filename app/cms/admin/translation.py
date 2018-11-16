@@ -8,7 +8,11 @@ from .attachment import DisplayImageWidgetStackedInline
 
 class TranslationModelForm(forms.ModelForm):
     text = forms.CharField(
-        required=True, label="Text", widget=EmojiPickerTextarea, max_length=640)
+        required=True,
+        label="Text übersetzt",
+        help_text="Hier nur den Meldungstext in der ausgewählten Sprache eintragen",
+        widget=EmojiPickerTextarea,
+        max_length=640)
 
 
 class TranslationAdminInline(DisplayImageWidgetStackedInline):

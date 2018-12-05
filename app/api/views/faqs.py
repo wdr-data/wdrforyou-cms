@@ -32,3 +32,4 @@ class FragmentSerializer(ModelSerializerWithFragments):
 class FragmentViewSet(viewsets.ModelViewSet):
     queryset = FAQ.objects.order_by('-id')
     serializer_class = FragmentSerializer
+    filter_fields = ('id', 'slug')

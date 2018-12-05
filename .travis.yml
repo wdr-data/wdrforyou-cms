@@ -1,35 +1,32 @@
 language: python
-
 sudo: false
-
 python:
-- "3.6"
-
+- '3.6'
 env:
   global:
-    - AWS_REGION=eu-central-1
-    - S3_BUCKET_NAME=newsforyou-static-staging
-    - SECRET_KEY=a
-    - BOT_SERVICE_ENDPOINT=https://example.com/
-
+  - AWS_REGION=eu-central-1
+  - S3_BUCKET_NAME=newsforyou-static-staging
+  - SECRET_KEY=a
+  - BOT_SERVICE_ENDPOINT=https://example.com/
 cache: pip
-
 install:
-  - pip install pipenv
-  - pipenv sync --dev
-
+- pip install pipenv
+- pipenv sync --dev
 script:
-  - echo "No tests :)"
-
+- echo "No tests :)"
 deploy:
-  - provider: script
-    skip_cleanup: true
-    script: cd app && zappa update staging && zappa manage staging "migrate" && ./manage.py collectstatic --noinput
-    on:
-      branch: master
-
-  - provider: script
-    skip_cleanup: true
-    script: cd app && zappa update prod && zappa manage prod "migrate" && ./manage.py collectstatic --noinput
-    on:
-      branch: production
+- provider: script
+  skip_cleanup: true
+  script: cd app && zappa update staging && zappa manage staging "migrate" && ./manage.py
+    collectstatic --noinput
+  on:
+    branch: master
+- provider: script
+  skip_cleanup: true
+  script: cd app && zappa update prod && zappa manage prod "migrate" && ./manage.py
+    collectstatic --noinput
+  on:
+    branch: production
+notifications:
+  slack:
+    secure: AFwUiixuVNVV0tY1j9/pLE+knCy2HCon3ptS6XZkasCi40S7SIfnYIZ/2t+to0O5EtfLTVdxooilCFAEMcGqz/8e4A8oiWNuKGMlx2v6hXBEfNYgbq2wiBF2XYhG6lw4F+XbkPEWZIb2yQHC+lpc8aCEFcak6CTrFlwNNZFdnoM1I7EssClGQyxScP2isp0AFWyosaUvAR5n3I2be19i5LSHe2vLYJVBfuP/7u2kvcuB9VUVcUFeJ3NqUeyEOjavZrQPZbzqPwWpStv/dvBLurCDZHfAJsyrdelM2pGwIfbLQJJds++ybz0HZBdqEJhOlpu5F7E2yANI4jDMsZ41CNdY9QerQAQwYp4Rgwd3EYsHH1xvznLHSfNpfMpCgcTmDivpnvi8BKYezYb2W9nr76FC0J7OC2XSSDeifVxLqPfQtIAuPy9DSYTbDQ9SbRV1/C/xkWPYZek/i51E7bmFwG+OFOQ0/KhvHhqFT3UbECE5s520CsiViAjOdNxoXOEfhdRgjkkeqRdn+A1fx07TrF2+cBTwvpQNqpPxD6UTxcRh2uOIc44gEtG7yeqcU8RjKfBqlLc8z5sTu64axFDkftKGViEuXwEpcW8SCdYnJ3bigBQii/G4qmdhN6aejqQZQU9IWVDHx8TDPmr1CgrYOzTP/bXvZWJoh5OAHyKjYuQ=

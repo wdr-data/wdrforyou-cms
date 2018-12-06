@@ -46,7 +46,7 @@ $ pipenv run app/manage.py runserver
 - Follow [this guide](https://edgarroman.github.io/zappa-django-guide/walk_database/) to set up an SQL database (Postgres)
 - Follow [this guide](https://aws.amazon.com/premiumsupport/knowledge-center/internet-access-lambda-function/) to give your Lambda functions general internet access
 - Optional: Create an S3 endpoint in your VPC to specifically set up S3 connectivity for your Lambda functions
-- Run `zappa deploy <stage>` for initial deployment and `zappa update <stage>` for updating
+- Run `zappa deploy <stage>`, `zappa manage <stage> migrate` and `./manage.py collectstatic` for initial deployment and `zappa update <stage>` for updating
 
 ### Environment Configuration
 You can use the `s3-env-config` npm package to configure the environment variables in an S3 bucket.

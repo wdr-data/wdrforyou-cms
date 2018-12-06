@@ -3,44 +3,38 @@ from rest_framework import viewsets, serializers
 from cms.models.faq import FAQFragment, FAQ, FAQTranslation
 
 
-class FAQTranslationSerializer(serializers.ModelSerializer):
+class FAQFragmentSerializer(serializers.ModelSerializer):
+
     class Meta:
-        model = FAQTranslation
+        model = FAQFragment
         fields = ('id', 'text', 'media', 'media_original', 'media_note', )
 
 
-class FAQTranslationViewSet(viewsets.ModelViewSet):
-    queryset = FAQTranslation.objects.all().order_by('id')
-    serializer_class = FAQTranslationSerializer
+class FAQTranslationSerializer(serializers.ModelSerializer):
 
-
-class ModelSerializerWithFAQTranslations(serializers.ModelSerializer):
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    class Meta:
+        model = FAQTranslation
+        fields = ('id', )
 
     def to_representation(self, obj):
         rep = super().to_representation(obj)
 
-        serializer = self.translation_serializer_class(many=True, read_only=True)
-        translations = obj.translations.all()
+        serializer = FAQFragmentSerializer(many=True, read_only=True)
+        fragments = obj.fragments.all()
 
-        rep['translations'] = serializer.to_representation(translations)
+        rep['fragments'] = serializer.to_representation(fragments)
         return rep
 
 
-class FAQFragmentSerializer(ModelSerializerWithFAQTranslations):
-    translation_serializer_class = FAQTranslationSerializer
-    class Meta:
-        model = FAQFragment
-        fields = ('id', 'question', 'text', 'media', 'media_original', 'media_note', )
-
-
 class FAQSerializer(serializers.ModelSerializer):
+    german = FAQTranslationSerializer()
+    english = FAQTranslationSerializer()
+    arabic = FAQTranslationSerializer()
+    persian = FAQTranslationSerializer()
 
     class Meta:
         model = FAQ
-        fields = ('id', 'name', 'slug', 'media_original', 'media_note', 'media',  )
+        fields = ('id', 'name', 'slug', 'german', 'english', 'arabic', 'persian')
 
 
 class FragmentViewSet(viewsets.ModelViewSet):

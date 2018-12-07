@@ -38,19 +38,16 @@ class FAQTranslationAdmin(AttachmentAdmin):
 
 
 class FAQModelForm(forms.ModelForm):
-    slug = forms.CharField(
-        label='Slug', help_text="Wird automatisch ausgefüllt", disabled=True,
-        required=False)
 
     class Meta:
         model = FAQ
-        fields = ['name', 'slug', 'german', 'english', 'arabic', 'persian']
+        fields = ['name', 'handle', 'german', 'english', 'arabic', 'persian']
 
 
 class FAQAdmin(AttachmentAdmin):
     form = FAQModelForm
-    search_fields = ['name', 'slug']
-    list_display = ('name', 'slug')
+    search_fields = ['name', 'handle']
+    list_display = ('name', 'handle')
 
 
 # Register your models here.

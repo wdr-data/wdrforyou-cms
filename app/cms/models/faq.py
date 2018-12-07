@@ -40,7 +40,7 @@ class FAQ(models.Model):
         verbose_name_plural = 'FAQs'
 
     name = models.CharField('Titel', max_length=200, null=False)
-    slug = models.CharField('Slug', max_length=200, null=True, blank=True)
+    handle = models.CharField('Handle', max_length=200, null=True, blank=True)
 
     german = models.ForeignKey(FAQTranslation, on_delete=models.CASCADE, verbose_name='Text Deutsch',
                                related_name='german_faqs', null=True)
@@ -53,17 +53,3 @@ class FAQ(models.Model):
 
     def __str__(self):
         return f'{self.name}'
-
-    def _get_unique_slug(self):
-        slug = slugify(self.name)
-        unique_slug = slug
-        num = 1
-        while FAQ.objects.filter(slug=unique_slug).exists():
-            unique_slug = '{}-{}'.format(slug, num)
-            num += 1
-        return unique_slug
-
-    def save(self, *args, **kwargs):
-        if not self.slug:
-            self.slug = self._get_unique_slug()
-        super().save(*args, **kwargs)

@@ -34,10 +34,10 @@ class FAQSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = FAQ
-        fields = ('id', 'name', 'slug', 'german', 'english', 'arabic', 'persian')
+        fields = ('id', 'name', 'handle', 'german', 'english', 'arabic', 'persian')
 
 
 class FragmentViewSet(viewsets.ModelViewSet):
     queryset = FAQ.objects.order_by('-id')
     serializer_class = FAQSerializer
-    filter_fields = ('id', 'slug')
+    filter_fields = ('id', 'handle')

@@ -18,6 +18,7 @@ class FAQFragmentModelForm(forms.ModelForm):
 class FAQFragmentAdminInline(DisplayImageWidgetStackedInline):
     model = FAQFragment
     form = FAQFragmentModelForm
+    image_display_fields = ['media']
 
     fk_name = "translation"
     extra = 0

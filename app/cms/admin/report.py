@@ -1,4 +1,4 @@
-import os
+import os, re
 from time import sleep
 from posixpath import join as urljoin
 
@@ -12,12 +12,12 @@ import requests
 from ..models.report import Report, ReportTranslation
 from .translation import TranslationModelForm, TranslationAdminInline
 from .attachment import AttachmentAdmin
+from .slack import post_message
 
 PUSH_TRIGGER_URL = urljoin(os.environ['BOT_SERVICE_ENDPOINT'], 'sendReport')
 
 
 class ReportTranslationModelForm(TranslationModelForm):
-
     class Meta:
         model = ReportTranslation
         fields = ['language', 'text', 'link', 'media', 'media_original', 'media_note']
@@ -72,7 +72,6 @@ class ReportTranslationAdminInline(TranslationAdminInline):
 
 
 class ReportModelForm(forms.ModelForm):
-
     headline = forms.CharField(
         label='Überschrift',
         help_text="Überschrift für die Meldungen-Liste eintragen.",
@@ -83,7 +82,7 @@ class ReportModelForm(forms.ModelForm):
         required=True,
         label="Text Deutsch",
         help_text="Hier nur die Meldung auf Deutsch eintragen. "
-            "Die Übersetzung zu anderen Sprachen wird weiter unten eingegeben, falls nötig.",
+                  "Die Übersetzung zu anderen Sprachen wird weiter unten eingegeben, falls nötig.",
         widget=EmojiPickerTextarea,
         max_length=640)
 
@@ -96,15 +95,15 @@ class ReportModelForm(forms.ModelForm):
     class Meta:
         model = Report
         fields = ['published', 'delivered',
-            'headline', 'arabic', 'persian', 'english', 'text', 'link',
-            'media', 'media_original', 'media_note']
+                  'headline', 'arabic', 'persian', 'english', 'text', 'link',
+                  'media', 'media_original', 'media_note']
 
 
 class ReportAdmin(AttachmentAdmin):
     form = ReportModelForm
     list_display = ('published', 'delivered', 'headline', 'created', 'translations',)
-    list_display_links = ('headline', )
-    inlines = (ReportTranslationAdminInline, )
+    list_display_links = ('headline',)
+    inlines = (ReportTranslationAdminInline,)
 
     def translations(self, obj):
         languages = [
@@ -118,7 +117,6 @@ class ReportAdmin(AttachmentAdmin):
 
     def save_model(self, request, obj, form, change):
         super().save_model(request, obj, form, change)
-
         all_messages = messages.get_messages(request)
 
         errors = [msg for msg in all_messages if msg.level == messages.ERROR]
@@ -127,7 +125,89 @@ class ReportAdmin(AttachmentAdmin):
         for message in all_messages:
             messages.add_message(
                 request, message.level, message.message, extra_tags=message.extra_tags)
-    
+
+        if not change:
+            cms_url = re.sub(r'/add/$', f'{obj.id}/change', request.build_absolute_uri())
+            slack_head = [
+                {
+                    "type": "section",
+                    "text": {
+                        "type": "mrkdwn",
+                        "text": f"*🚨 Neue Meldung:* <{cms_url}|{obj.headline}>"
+                    }
+                },
+                {
+                    "type": "section",
+                    "text": {
+                        "type": "mrkdwn",
+                        "text": f"_{obj.text}_"
+                    }
+                },
+                {
+                    "type": "divider"
+                },
+            ]
+
+            slack_translations = [
+                {
+                    "type": "section",
+                    "text": {
+                        "type": "mrkdwn",
+                        "text": f"Angeforderte Übersetzungen: {', '.join(self.translations(obj))}",
+                    }
+                }
+            ]
+
+            slack_context = [
+                {
+                    "type": "context",
+                    "elements": [
+                        {
+                            "type": "plain_text",
+                            "text": f"Meldung von {request.user} angelegt. {obj.created.strftime('%H:%M %m.%d.%Y')}",
+                            "emoji": True
+                        }
+                    ]
+                }
+            ]
+            post_message('', blocks=[*slack_head, *slack_translations, *slack_context])
+
+        if 'text' in form.changed_data and change:
+            slack_head = [
+                {
+                    "type": "section",
+                    "text": {
+                        "type": "mrkdwn",
+                        "text": f"*🔀 Update des Meldungstext!"
+                                f"  <{request.build_absolute_uri()}|🌐 Übersetzten> *\n\n_{obj.text}_"
+                    }
+                }
+            ]
+
+            slack_translations = [
+                {
+                    "type": "section",
+                    "text": {
+                        "type": "mrkdwn",
+                        "text": f"Übersetzungen: {', '.join(self.translations(obj))}",
+                    }
+                }
+            ]
+
+            slack_context = [
+                {
+                    "type": "context",
+                    "elements": [
+                        {
+                            "type": "plain_text",
+                            "text": f"Änderung von {request.user} vorgenommen.",
+                            "emoji": True
+                        }
+                    ]
+                }
+            ]
+            post_message('', blocks=[*slack_head, *slack_translations, *slack_context])
+
         try:
             if obj.published and not obj.delivered and not errors:
 
@@ -152,6 +232,47 @@ class ReportAdmin(AttachmentAdmin):
 
         except Exception as e:
             messages.error(request, str(e))
+
+    def save_formset(self, request, form, formset, change):
+        super().save_formset(request, form, formset, change)
+
+        languages = {}
+        slack_update = []
+
+        for form_ in formset.forms:
+
+            languages[form_.instance.language] = True
+            if 'text' in form_.changed_data:
+                slack_update.extend(
+                        [
+                            {
+                                "type": "section",
+                                "text": {
+                                    "type": "mrkdwn",
+                                    "text": f"*🌐 {form_.instance.language} Übersetzung von {request.user}*"
+                                }
+                            },
+                            {
+                                "type": "section",
+                                "text": {
+                                    "type": "mrkdwn",
+                                    "text": f"_{form_.instance.text}_"
+                                }
+                            }
+                        ]
+                )
+        if slack_update:
+            slack_status = [
+                {
+                    "type": "section",
+                    "text": {
+                        "type": "mrkdwn",
+                        "text": f"{', '.join([k for k,v  in languages.items() if v])}"
+                    }
+                }
+            ]
+
+            post_message('', blocks=[*slack_update, *slack_status])
 
 
 ReportAdmin.translations.short_description = 'Übersetzungen'

@@ -163,6 +163,7 @@ if AWS_LAMBDA or CI:
 
     # The AWS region to connect to.
     AWS_REGION = "eu-central-1"
+    AWS_S3_REGION_NAME = "eu-central-1"
 
     # The AWS access key to use.
     AWS_ACCESS_KEY_ID = os.environ['AWS_ACCESS_KEY_ID']

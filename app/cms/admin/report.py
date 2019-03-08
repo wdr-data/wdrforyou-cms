@@ -199,8 +199,16 @@ class ReportAdmin(AttachmentAdmin):
 
         languages = [lang for lang in ['arabic', 'persian', 'english'] if getattr(formset.forms[0].instance.report, lang)]
         for form_ in formset.forms:
+
             if form_.instance.language in languages:
                 languages.remove(form_.instance.language)
+                try:
+                    if form_.cleaned_data and form_.cleaned_data.get('DELETE', True):
+                        languages.append(form_.instance.language)
+                except AttributeError:
+                    # annoyingly, if a subform is invalid Django explicity raises
+                    # an AttributeError for cleaned_data
+                    pass
 
             if 'text' in form_.changed_data:
                 slack_update.extend(

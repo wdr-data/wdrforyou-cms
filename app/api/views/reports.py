@@ -17,3 +17,4 @@ class ReportSerializer(ModelSerializerWithTranslations):
 class ReportViewSet(viewsets.ModelViewSet):
     queryset = Report.objects.filter(published=True).order_by('-created')
     serializer_class = ReportSerializer
+    filter_fields = ('arabic', 'persian', 'english', 'published', 'delivered')

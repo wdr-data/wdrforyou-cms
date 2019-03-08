@@ -180,7 +180,6 @@ class ReportAdmin(AttachmentAdmin):
 
     def save_formset(self, request, form, formset, change):
         super().save_formset(request, form, formset, change)
-        print(form.changed_data)
         blocks = []
 
         languages = [lang for lang in ['arabic', 'persian', 'english'] if getattr(formset.forms[0].instance.report, lang)]

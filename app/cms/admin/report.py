@@ -166,6 +166,12 @@ class ReportAdmin(AttachmentAdmin):
                     if r.status_code == 200:
                         messages.success(request, '🚨 Nachricht wird jetzt gesendet...')
 
+                        blocks_success = [
+                            section(f"🚀 Meldung abgenommen und auf dem Weg zum User!"),
+                            context(element(f"Freigegeben von {request.user}. {str(timezone.now()-obj.created)}"))
+                        ]
+                        post_message(blocks=blocks_success)
+
                     else:
                         messages.error(request, '🚨 Nachricht konnte nicht gesendet werden!')
 
@@ -207,13 +213,8 @@ class ReportAdmin(AttachmentAdmin):
                     ]
                 )
 
-        if not languages:
-            blocks.extend(
-                [
-                    section(f"Alle Übersetzungen sind da! *<{cms_url}|🚀 Abnahme>*"),
-                    context(element(f"{str(timezone.now()-formset.forms[0].instance.report.created)}"))
-                ]
-            )
+        if not languages and not obj.published:
+            blocks.append(section(f"Alle Übersetzungen sind da! *<{cms_url}|🚀 Abnahme>*"))
         else:
             blocks.append(section(f"🌐 Fehlende *<{cms_url}| Übersetzungen>*: *{', '.join(languages).upper()}*"))
 

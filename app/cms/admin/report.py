@@ -135,7 +135,7 @@ class ReportAdmin(AttachmentAdmin):
                 section(f"*🚨 Neue Meldung:* <{cms_url}|{obj.headline}>"),
                 section(f"{obj.text}"),
                 divider(),
-                section(f"Angeforderte Übersetzungen: {', '.join(languages).upper()}"),
+                section(f"🌐 Angeforderte <{cms_url}|Übersetztungen>: {', '.join(languages).upper()}"),
                 context(element(f"Meldung von {request.user} angelegt.")),
             ]
 
@@ -143,8 +143,8 @@ class ReportAdmin(AttachmentAdmin):
 
         elif 'text' in form.changed_data:
             blocks = [
-                section(f"*🚨 Update der Meldung! "
-                        f"<{cms_url}|🌐 Übersetzten> *\n\n{obj.text}"),
+                section(f"*🚨 Update der Meldung! *"
+                        f"<{cms_url}|🌐 Übersetzten> \n\n{obj.text}"),
                 divider(),
                 section(f"Angeforderte Übersetzungen: {', '.join(languages).upper()}"),
                 divider(),

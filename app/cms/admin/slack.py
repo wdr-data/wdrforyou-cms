@@ -35,7 +35,7 @@ def divider():
     return {"type": "divider"}
 
 
-def post_message(message, *, private=False, channel=CHANNEL, **kwargs):
+def post_message(*, private=False, channel=CHANNEL, **kwargs):
     """
     Send message with attachments to Slack on channel. Set 'private' to a user ID to send a message
     that only that user can see. Set 'channel' to a specific ID to send in a channel different from
@@ -45,7 +45,6 @@ def post_message(message, *, private=False, channel=CHANNEL, **kwargs):
         return CLIENT.api_call(
             'chat.postMessage',
             channel=channel,
-            text=message,
             **kwargs,
         )
     else:
@@ -53,6 +52,5 @@ def post_message(message, *, private=False, channel=CHANNEL, **kwargs):
             'chat.postEphemeral',
             channel=channel,
             user=private,
-            text=message,
             **kwargs,
         )

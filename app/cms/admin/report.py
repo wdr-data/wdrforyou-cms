@@ -139,7 +139,7 @@ class ReportAdmin(AttachmentAdmin):
                 context(element(f"Meldung von {request.user} angelegt.")),
             ]
 
-            post_message('', blocks=blocks)
+            post_message(blocks=blocks)
 
         elif 'text' in form.changed_data:
             blocks = [
@@ -151,7 +151,7 @@ class ReportAdmin(AttachmentAdmin):
                 context(element(f"Änderung von {request.user} vorgenommen.")),
             ]
 
-            post_message('', blocks=blocks)
+            post_message(blocks=blocks)
 
         try:
             if obj.published and not obj.delivered and not errors:
@@ -214,10 +214,10 @@ class ReportAdmin(AttachmentAdmin):
                 ]
             )
         else:
-            blocks.append(section(f"🌐 Fehlende *<{cms_url}| Übersetzungen>*: *{', '.join(languages).upper()}*" ))
+            blocks.append(section(f"🌐 Fehlende *<{cms_url}| Übersetzungen>*: *{', '.join(languages).upper()}*"))
 
         if blocks:
-            post_message('', blocks=blocks)
+            post_message(blocks=blocks)
 
 
 ReportAdmin.translations.short_description = 'Übersetzungen'

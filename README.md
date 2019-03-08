@@ -48,6 +48,9 @@ $ pipenv run app/manage.py runserver
 - Optional: Create an S3 endpoint in your VPC to specifically set up S3 connectivity for your Lambda functions
 - Run `zappa deploy <stage>`, `zappa manage <stage> migrate` and `./manage.py collectstatic` for initial deployment and `zappa update <stage>` for updating
 
+## Slack Integration
+- Follow [this guide](https://www.fullstackpython.com/blog/build-first-slack-bot-python.html)
+
 ### Environment Configuration
 You can use the `s3-env-config` npm package to configure the environment variables in an S3 bucket.
 
@@ -64,6 +67,8 @@ The following environment variables are required:
     "DB_USER": "",
     "DB_PASSWORD": "",
     "DB_HOST": "",
-    "BOT_SERVICE_ENDPOINT": ""  // With trailing slash
+    "BOT_SERVICE_ENDPOINT": "", // With trailing slash
+    "SLACK_BOT_TOKEN": "", 
+    "SLACK_CHANNEL": ""
 }
 ```

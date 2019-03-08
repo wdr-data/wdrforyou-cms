@@ -15,6 +15,7 @@ django-tz-detect = "*"
 requests = "*"
 pillow = "*"
 "django-s3direct" = "*"
+slackclient = "*"
 
 [dev-packages]
 zappa = "*"

@@ -1,9 +1,10 @@
-import os
+import os, re
 from time import sleep
 from posixpath import join as urljoin
 
 from django.contrib import admin, messages
 from django.db import transaction
+from django.utils import timezone
 from django import forms
 from emoji_picker.widgets import EmojiPickerTextInput
 from emoji_picker.widgets import EmojiPickerTextarea
@@ -12,12 +13,12 @@ import requests
 from ..models.report import Report, ReportTranslation
 from .translation import TranslationModelForm, TranslationAdminInline
 from .attachment import AttachmentAdmin
+from .slack import post_message, section, divider, context, element
 
 PUSH_TRIGGER_URL = urljoin(os.environ['BOT_SERVICE_ENDPOINT'], 'sendReport')
 
 
 class ReportTranslationModelForm(TranslationModelForm):
-
     class Meta:
         model = ReportTranslation
         fields = ['language', 'text', 'link', 'media', 'media_original', 'media_note']
@@ -72,7 +73,6 @@ class ReportTranslationAdminInline(TranslationAdminInline):
 
 
 class ReportModelForm(forms.ModelForm):
-
     headline = forms.CharField(
         label='Überschrift',
         help_text="Überschrift für die Meldungen-Liste eintragen.",
@@ -83,7 +83,7 @@ class ReportModelForm(forms.ModelForm):
         required=True,
         label="Text Deutsch",
         help_text="Hier nur die Meldung auf Deutsch eintragen. "
-            "Die Übersetzung zu anderen Sprachen wird weiter unten eingegeben, falls nötig.",
+                  "Die Übersetzung zu anderen Sprachen wird weiter unten eingegeben, falls nötig.",
         widget=EmojiPickerTextarea,
         max_length=640)
 
@@ -96,15 +96,15 @@ class ReportModelForm(forms.ModelForm):
     class Meta:
         model = Report
         fields = ['published', 'delivered',
-            'headline', 'arabic', 'persian', 'english', 'text', 'link',
-            'media', 'media_original', 'media_note']
+                  'headline', 'arabic', 'persian', 'english', 'text', 'link',
+                  'media', 'media_original', 'media_note']
 
 
 class ReportAdmin(AttachmentAdmin):
     form = ReportModelForm
     list_display = ('published', 'delivered', 'headline', 'created', 'translations',)
-    list_display_links = ('headline', )
-    inlines = (ReportTranslationAdminInline, )
+    list_display_links = ('headline',)
+    inlines = (ReportTranslationAdminInline,)
 
     def translations(self, obj):
         languages = [
@@ -118,7 +118,6 @@ class ReportAdmin(AttachmentAdmin):
 
     def save_model(self, request, obj, form, change):
         super().save_model(request, obj, form, change)
-
         all_messages = messages.get_messages(request)
 
         errors = [msg for msg in all_messages if msg.level == messages.ERROR]
@@ -127,7 +126,33 @@ class ReportAdmin(AttachmentAdmin):
         for message in all_messages:
             messages.add_message(
                 request, message.level, message.message, extra_tags=message.extra_tags)
-    
+
+        languages = [lang for lang in ['arabic', 'persian', 'english'] if getattr(obj, lang)]
+        cms_url = re.sub(r'/add/$', f'{obj.id}/change', request.build_absolute_uri())
+
+        if not change:
+            blocks = [
+                section(f"*🚨 Neue Meldung:* <{cms_url}|{obj.headline}>"),
+                section(f"{obj.text}"),
+                divider(),
+                section(f"🌐 Angeforderte <{cms_url}|Übersetzungen>: {', '.join(languages).upper()}"),
+                context(element(f"Meldung von {request.user} angelegt.")),
+            ]
+
+            post_message(blocks=blocks)
+
+        elif 'text' in form.changed_data:
+            blocks = [
+                section(f"*🚨 Update der Meldung! *"
+                        f"<{cms_url}|🌐 Übersetzen> \n\n{obj.text}"),
+                divider(),
+                section(f"Angeforderte Übersetzungen: {', '.join(languages).upper()}"),
+                divider(),
+                context(element(f"Änderung von {request.user} vorgenommen.")),
+            ]
+
+            post_message(blocks=blocks)
+
         try:
             if obj.published and not obj.delivered and not errors:
 
@@ -152,6 +177,48 @@ class ReportAdmin(AttachmentAdmin):
 
         except Exception as e:
             messages.error(request, str(e))
+
+    def save_formset(self, request, form, formset, change):
+        super().save_formset(request, form, formset, change)
+        blocks = []
+        obj = formset.forms[0].instance.report
+
+        languages = [lang for lang in ['arabic', 'persian', 'english'] if getattr(obj, lang)]
+        cms_url = re.sub(r'/add/$', f'{obj.id}/change', request.build_absolute_uri())
+
+        for form_ in formset.forms:
+
+            if form_.instance.language in languages:
+                languages.remove(form_.instance.language)
+                try:
+                    if form_.cleaned_data and form_.cleaned_data.get('DELETE', True):
+                        languages.append(form_.instance.language)
+                except AttributeError:
+                    # annoyingly, if a subform is invalid Django explicity raises
+                    # an AttributeError for cleaned_data
+                    pass
+
+            if 'text' in form_.changed_data:
+                blocks.extend(
+                    [
+                        section(f"*✏️ Übersetzung {form_.instance.language.upper()} * von {request.user}"),
+                        section(f"{form_.instance.text}"),
+                        divider(),
+                    ]
+                )
+
+        if not languages:
+            blocks.extend(
+                [
+                    section(f"Alle Übersetzungen sind da! *<{cms_url}|🚀 Abnahme>*"),
+                    context(element(f"{str(timezone.now()-formset.forms[0].instance.report.created)}"))
+                ]
+            )
+        else:
+            blocks.append(section(f"🌐 Fehlende *<{cms_url}| Übersetzungen>*: *{', '.join(languages).upper()}*"))
+
+        if blocks:
+            post_message(blocks=blocks)
 
 
 ReportAdmin.translations.short_description = 'Übersetzungen'

@@ -13,7 +13,7 @@ import requests
 from ..models.report import Report, ReportTranslation
 from .translation import TranslationModelForm, TranslationAdminInline
 from .attachment import AttachmentAdmin
-from .slack import post_message
+from .slack import post_message, section, divider, context, element
 
 PUSH_TRIGGER_URL = urljoin(os.environ['BOT_SERVICE_ENDPOINT'], 'sendReport')
 
@@ -132,94 +132,38 @@ class ReportAdmin(AttachmentAdmin):
         if not change:
             cms_url = re.sub(r'/add/$', f'{obj.id}/change', request.build_absolute_uri())
             slack_head = [
-                {
-                    "type": "section",
-                    "text": {
-                        "type": "mrkdwn",
-                        "text": f"*🚨 Neue Meldung:* <{cms_url}|{obj.headline}>"
-                    }
-                },
-                {
-                    "type": "section",
-                    "text": {
-                        "type": "mrkdwn",
-                        "text": f"{obj.text}"
-                    }
-                },
-                {
-                    "type": "divider"
-                },
+                section(f"*🚨 Neue Meldung:* <{cms_url}|{obj.headline}>"),
+                section(f"{obj.text}"),
+                divider(),
             ]
 
             slack_translations = [
-                {
-                    "type": "section",
-                    "text": {
-                        "type": "mrkdwn",
-                        "text": f"Angeforderte Übersetzungen: "
-                                f"{', '.join(languages).upper()}",
-                    }
-                }
+                section(f"Angeforderte Übersetzungen: {', '.join(languages).upper()}"),
             ]
 
             slack_context = [
-                {
-                    "type": "context",
-                    "elements": [
-                        {
-                            "type": "plain_text",
-                            "text": f"Meldung von {request.user} angelegt.",
-                            "emoji": True
-                        }
-                    ]
-                }
+                context(element(f"Meldung von {request.user} angelegt.")),
             ]
+
             post_message('', blocks=[*slack_head, *slack_translations, *slack_context])
 
         if 'text' in form.changed_data and change:
             slack_head = [
-                {
-                    "type": "section",
-                    "text": {
-                        "type": "mrkdwn",
-                        "text": f"*🚨 Update des Meldungstext!"
-                                f"  <{request.build_absolute_uri()}|🌐 Übersetzten> *\n\n{obj.text}"
-                    }
-                },
-                {
-                    "type": "divider"
-                }
+                section(f"*🚨 Update des Meldungstext! "
+                        f"<{request.build_absolute_uri()}|🌐 Übersetzten> *\n\n{obj.text}"),
+                divider(),
             ]
 
             slack_translations = [
-                {
-                    "type": "section",
-                    "text": {
-                        "type": "mrkdwn",
-                        "text": f"Angeforderte Übersetzungen: "
-                                f" {', '.join(languages).upper()}",
-                    }
-                },
-                {
-                    "type": "divider"
-                }
+                section(f"Angeforderte Übersetzungen: {', '.join(languages).upper()}"),
+                divider(),
             ]
 
             slack_context = [
-                {
-                    "type": "divider"
-                },
-                {
-                    "type": "context",
-                    "elements": [
-                        {
-                            "type": "plain_text",
-                            "text": f"Änderung von {request.user} vorgenommen.",
-                            "emoji": True
-                        }
-                    ]
-                }
+                divider(),
+                context(element(f"Änderung von {request.user} vorgenommen.")),
             ]
+
             post_message('', blocks=[*slack_head, *slack_translations, *slack_context])
 
         try:
@@ -261,63 +205,28 @@ class ReportAdmin(AttachmentAdmin):
             if 'text' in form_.changed_data:
                 slack_update.extend(
                         [
-                            {
-                                "type": "divider"
-                            },
-                            {
-                                "type": "section",
-                                "text": {
-                                    "type": "mrkdwn",
-                                    "text": f"*🌐 Übersetzung {form_.instance.language.upper()} * von {request.user}"
-                                }
-                            },
-                            {
-                                "type": "section",
-                                "text": {
-                                    "type": "mrkdwn",
-                                    "text": f"{form_.instance.text}"
-                                }
-                            }
+                            divider(),
+                            section(f"*🌐 Übersetzung {form_.instance.language.upper()} * von {request.user}"),
+                            section(f"{form_.instance.text}"),
                         ]
                 )
-        print(languages)
+
         if not languages:
             slack_status.extend(
                 [
-                    {
-                        "type": "divider"
-                    },
-                    {
-                        "type": "section",
-                        "text": {
-                            "type": "mrkdwn",
-                            "text": f"Alle Übersetzungen sind da! *<{request.build_absolute_uri()}|🚀 Abnahme>*"
-                        }
-                    },
-                    {
-                        "type": "context",
-                        "elements": [
-                            {
-                                "type": "mrkdwn",
-                                "text": f"{str(timezone.now()-formset.forms[0].instance.report.created)}"
-                            }
-                        ]
-                    }
+                    divider(),
+                    section(f"Alle Übersetzungen sind da! *<{request.build_absolute_uri()}|🚀 Abnahme>*"),
+                    context(element(f"{str(timezone.now()-formset.forms[0].instance.report.created)}"))
                 ]
             )
         else:
             slack_status.extend(
                 [
-                    {
-                        "type": "divider"
-                    },
-                    {
-                        "type": "section",
-                        "text": {
-                            "type": "mrkdwn",
-                            "text": f"🌐 Fehlende *<{request.build_absolute_uri()}| Übersetzungen>*: *{', '.join(languages).upper()}*"
-                        }
-                    }
+                    divider(),
+                    section(
+                        f"🌐 Fehlende "
+                        f"*<{request.build_absolute_uri()}| Übersetzungen>*: *{', '.join(languages).upper()}*"
+                    ),
                 ]
             )
 

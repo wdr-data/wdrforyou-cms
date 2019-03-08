@@ -128,43 +128,30 @@ class ReportAdmin(AttachmentAdmin):
                 request, message.level, message.message, extra_tags=message.extra_tags)
 
         languages = [lang for lang in ['arabic', 'persian', 'english'] if getattr(obj, lang)]
+        cms_url = re.sub(r'/add/$', f'{obj.id}/change', request.build_absolute_uri())
 
         if not change:
-            cms_url = re.sub(r'/add/$', f'{obj.id}/change', request.build_absolute_uri())
-            slack_head = [
+            blocks = [
                 section(f"*🚨 Neue Meldung:* <{cms_url}|{obj.headline}>"),
                 section(f"{obj.text}"),
                 divider(),
-            ]
-
-            slack_translations = [
                 section(f"Angeforderte Übersetzungen: {', '.join(languages).upper()}"),
-            ]
-
-            slack_context = [
                 context(element(f"Meldung von {request.user} angelegt.")),
             ]
 
-            post_message('', blocks=[*slack_head, *slack_translations, *slack_context])
+            post_message('', blocks=blocks)
 
-        if 'text' in form.changed_data and change:
-            slack_head = [
-                section(f"*🚨 Update des Meldungstext! "
-                        f"<{request.build_absolute_uri()}|🌐 Übersetzten> *\n\n{obj.text}"),
+        elif 'text' in form.changed_data:
+            blocks = [
+                section(f"*🚨 Update der Meldung! "
+                        f"<{cms_url}|🌐 Übersetzten> *\n\n{obj.text}"),
                 divider(),
-            ]
-
-            slack_translations = [
                 section(f"Angeforderte Übersetzungen: {', '.join(languages).upper()}"),
-                divider(),
-            ]
-
-            slack_context = [
                 divider(),
                 context(element(f"Änderung von {request.user} vorgenommen.")),
             ]
 
-            post_message('', blocks=[*slack_head, *slack_translations, *slack_context])
+            post_message('', blocks=blocks)
 
         try:
             if obj.published and not obj.delivered and not errors:
@@ -194,10 +181,11 @@ class ReportAdmin(AttachmentAdmin):
     def save_formset(self, request, form, formset, change):
         super().save_formset(request, form, formset, change)
         print(form.changed_data)
-        slack_update = []
-        slack_status = []
+        blocks = []
 
         languages = [lang for lang in ['arabic', 'persian', 'english'] if getattr(formset.forms[0].instance.report, lang)]
+        cms_url = re.sub(r'/add/$', f'{obj.id}/change', request.build_absolute_uri())
+
         for form_ in formset.forms:
 
             if form_.instance.language in languages:
@@ -211,35 +199,35 @@ class ReportAdmin(AttachmentAdmin):
                     pass
 
             if 'text' in form_.changed_data:
-                slack_update.extend(
+                blocks.extend(
                         [
                             divider(),
-                            section(f"*🌐 Übersetzung {form_.instance.language.upper()} * von {request.user}"),
+                            section(f"*✏️ Übersetzung {form_.instance.language.upper()} * von {request.user}"),
                             section(f"{form_.instance.text}"),
                         ]
                 )
 
         if not languages:
-            slack_status.extend(
+            blocks.extend(
                 [
                     divider(),
-                    section(f"Alle Übersetzungen sind da! *<{request.build_absolute_uri()}|🚀 Abnahme>*"),
+                    section(f"Alle Übersetzungen sind da! *<{cms_url}|🚀 Abnahme>*"),
                     context(element(f"{str(timezone.now()-formset.forms[0].instance.report.created)}"))
                 ]
             )
         else:
-            slack_status.extend(
+            blocks.extend(
                 [
                     divider(),
                     section(
                         f"🌐 Fehlende "
-                        f"*<{request.build_absolute_uri()}| Übersetzungen>*: *{', '.join(languages).upper()}*"
+                        f"*<{cms_url}| Übersetzungen>*: *{', '.join(languages).upper()}*"
                     ),
                 ]
             )
 
-        if slack_update or slack_status:
-            post_message('', blocks=[*slack_update, *slack_status])
+        if blocks:
+            post_message('', blocks=blocks)
 
 
 ReportAdmin.translations.short_description = 'Übersetzungen'

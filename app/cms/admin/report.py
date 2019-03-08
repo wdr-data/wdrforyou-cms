@@ -133,7 +133,7 @@ class ReportAdmin(AttachmentAdmin):
         if not change:
             blocks = [
                 section(f"*🚨 Neue Meldung:* <{cms_url}|{obj.headline}>"),
-                section(f"{obj.text}"),
+                section(obj.text),
                 divider(),
                 section(f"🌐 Angeforderte <{cms_url}|Übersetzungen>: {', '.join(languages).upper()}"),
                 context(element(f"Meldung von {request.user} angelegt.")),

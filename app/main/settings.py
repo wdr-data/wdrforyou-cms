@@ -163,7 +163,10 @@ if AWS_LAMBDA or CI:
 
     # The AWS region to connect to.
     AWS_REGION = "eu-central-1"
+
+    # Config for s3direct
     AWS_S3_REGION_NAME = "eu-central-1"
+    AWS_S3_ENDPOINT_URL = f'{S3_BUCKET_NAME}.s3-{AWS_S3_REGION_NAME}.amazonaws.com'
 
     # The AWS access key to use.
     AWS_ACCESS_KEY_ID = os.environ['AWS_ACCESS_KEY_ID']

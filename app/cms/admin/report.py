@@ -128,7 +128,7 @@ class ReportAdmin(AttachmentAdmin):
                 request, message.level, message.message, extra_tags=message.extra_tags)
 
         languages = [lang for lang in ['arabic', 'persian', 'english'] if getattr(obj, lang)]
-        cms_url = re.sub(r'/add/$', f'{obj.id}/change', request.build_absolute_uri())
+        cms_url = re.sub(r'/add/$', f'/{obj.id}/change', request.build_absolute_uri())
 
         if not change:
             blocks = [
@@ -184,7 +184,7 @@ class ReportAdmin(AttachmentAdmin):
         obj = formset.forms[0].instance.report
 
         languages = [lang for lang in ['arabic', 'persian', 'english'] if getattr(obj, lang)]
-        cms_url = re.sub(r'/add/$', f'{obj.id}/change', request.build_absolute_uri())
+        cms_url = re.sub(r'/add/$', f'/{obj.id}/change', request.build_absolute_uri())
 
         for form_ in formset.forms:
 

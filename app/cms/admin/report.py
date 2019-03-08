@@ -181,8 +181,9 @@ class ReportAdmin(AttachmentAdmin):
     def save_formset(self, request, form, formset, change):
         super().save_formset(request, form, formset, change)
         blocks = []
+        obj = formset.forms[0].instance.report
 
-        languages = [lang for lang in ['arabic', 'persian', 'english'] if getattr(formset.forms[0].instance.report, lang)]
+        languages = [lang for lang in ['arabic', 'persian', 'english'] if getattr(obj, lang)]
         cms_url = re.sub(r'/add/$', f'{obj.id}/change', request.build_absolute_uri())
 
         for form_ in formset.forms:

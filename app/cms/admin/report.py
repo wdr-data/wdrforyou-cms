@@ -4,6 +4,7 @@ from posixpath import join as urljoin
 
 from django.contrib import admin, messages
 from django.db import transaction
+from django.utils import timezone
 from django import forms
 from emoji_picker.widgets import EmojiPickerTextInput
 from emoji_picker.widgets import EmojiPickerTextarea
@@ -126,6 +127,8 @@ class ReportAdmin(AttachmentAdmin):
             messages.add_message(
                 request, message.level, message.message, extra_tags=message.extra_tags)
 
+        languages = [lang for lang in ['arabic', 'persian', 'english'] if getattr(obj, lang)]
+
         if not change:
             cms_url = re.sub(r'/add/$', f'{obj.id}/change', request.build_absolute_uri())
             slack_head = [
@@ -140,7 +143,7 @@ class ReportAdmin(AttachmentAdmin):
                     "type": "section",
                     "text": {
                         "type": "mrkdwn",
-                        "text": f"_{obj.text}_"
+                        "text": f"{obj.text}"
                     }
                 },
                 {
@@ -153,7 +156,8 @@ class ReportAdmin(AttachmentAdmin):
                     "type": "section",
                     "text": {
                         "type": "mrkdwn",
-                        "text": f"Angeforderte Übersetzungen: {', '.join(self.translations(obj))}",
+                        "text": f"Angeforderte Übersetzungen: "
+                                f"{', '.join(languages).upper()}",
                     }
                 }
             ]
@@ -164,7 +168,7 @@ class ReportAdmin(AttachmentAdmin):
                     "elements": [
                         {
                             "type": "plain_text",
-                            "text": f"Meldung von {request.user} angelegt. {obj.created.strftime('%H:%M %m.%d.%Y')}",
+                            "text": f"Meldung von {request.user} angelegt.",
                             "emoji": True
                         }
                     ]
@@ -178,9 +182,12 @@ class ReportAdmin(AttachmentAdmin):
                     "type": "section",
                     "text": {
                         "type": "mrkdwn",
-                        "text": f"*🔀 Update des Meldungstext!"
-                                f"  <{request.build_absolute_uri()}|🌐 Übersetzten> *\n\n_{obj.text}_"
+                        "text": f"*🚨 Update des Meldungstext!"
+                                f"  <{request.build_absolute_uri()}|🌐 Übersetzten> *\n\n{obj.text}"
                     }
+                },
+                {
+                    "type": "divider"
                 }
             ]
 
@@ -189,12 +196,19 @@ class ReportAdmin(AttachmentAdmin):
                     "type": "section",
                     "text": {
                         "type": "mrkdwn",
-                        "text": f"Übersetzungen: {', '.join(self.translations(obj))}",
+                        "text": f"Angeforderte Übersetzungen: "
+                                f" {', '.join(languages).upper()}",
                     }
+                },
+                {
+                    "type": "divider"
                 }
             ]
 
             slack_context = [
+                {
+                    "type": "divider"
+                },
                 {
                     "type": "context",
                     "elements": [
@@ -235,43 +249,79 @@ class ReportAdmin(AttachmentAdmin):
 
     def save_formset(self, request, form, formset, change):
         super().save_formset(request, form, formset, change)
-
-        languages = {}
+        print(form.changed_data)
         slack_update = []
+        slack_status = []
 
+        languages = [lang for lang in ['arabic', 'persian', 'english'] if getattr(formset.forms[0].instance.report, lang)]
         for form_ in formset.forms:
+            if form_.instance.language in languages:
+                languages.remove(form_.instance.language)
 
-            languages[form_.instance.language] = True
             if 'text' in form_.changed_data:
                 slack_update.extend(
                         [
                             {
+                                "type": "divider"
+                            },
+                            {
                                 "type": "section",
                                 "text": {
                                     "type": "mrkdwn",
-                                    "text": f"*🌐 {form_.instance.language} Übersetzung von {request.user}*"
+                                    "text": f"*🌐 Übersetzung {form_.instance.language.upper()} * von {request.user}"
                                 }
                             },
                             {
                                 "type": "section",
                                 "text": {
                                     "type": "mrkdwn",
-                                    "text": f"_{form_.instance.text}_"
+                                    "text": f"{form_.instance.text}"
                                 }
                             }
                         ]
                 )
-        if slack_update:
-            slack_status = [
-                {
-                    "type": "section",
-                    "text": {
-                        "type": "mrkdwn",
-                        "text": f"{', '.join([k for k,v  in languages.items() if v])}"
+        print(languages)
+        if not languages:
+            slack_status.extend(
+                [
+                    {
+                        "type": "divider"
+                    },
+                    {
+                        "type": "section",
+                        "text": {
+                            "type": "mrkdwn",
+                            "text": f"Alle Übersetzungen sind da! *<{request.build_absolute_uri()}|🚀 Abnahme>*"
+                        }
+                    },
+                    {
+                        "type": "context",
+                        "elements": [
+                            {
+                                "type": "mrkdwn",
+                                "text": f"{str(timezone.now()-formset.forms[0].instance.report.created)}"
+                            }
+                        ]
                     }
-                }
-            ]
+                ]
+            )
+        else:
+            slack_status.extend(
+                [
+                    {
+                        "type": "divider"
+                    },
+                    {
+                        "type": "section",
+                        "text": {
+                            "type": "mrkdwn",
+                            "text": f"🌐 Fehlende *<{request.build_absolute_uri()}| Übersetzungen>*: *{', '.join(languages).upper()}*"
+                        }
+                    }
+                ]
+            )
 
+        if slack_update or slack_status:
             post_message('', blocks=[*slack_update, *slack_status])
 
 

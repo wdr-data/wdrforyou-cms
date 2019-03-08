@@ -199,31 +199,22 @@ class ReportAdmin(AttachmentAdmin):
 
             if 'text' in form_.changed_data:
                 blocks.extend(
-                        [
-                            divider(),
-                            section(f"*✏️ Übersetzung {form_.instance.language.upper()} * von {request.user}"),
-                            section(f"{form_.instance.text}"),
-                        ]
+                    [
+                        section(f"*✏️ Übersetzung {form_.instance.language.upper()} * von {request.user}"),
+                        section(f"{form_.instance.text}"),
+                        divider(),
+                    ]
                 )
 
         if not languages:
             blocks.extend(
                 [
-                    divider(),
                     section(f"Alle Übersetzungen sind da! *<{cms_url}|🚀 Abnahme>*"),
                     context(element(f"{str(timezone.now()-formset.forms[0].instance.report.created)}"))
                 ]
             )
         else:
-            blocks.extend(
-                [
-                    divider(),
-                    section(
-                        f"🌐 Fehlende "
-                        f"*<{cms_url}| Übersetzungen>*: *{', '.join(languages).upper()}*"
-                    ),
-                ]
-            )
+            blocks.append(section(f"🌐 Fehlende *<{cms_url}| Übersetzungen>*: *{', '.join(languages).upper()}*" ))
 
         if blocks:
             post_message('', blocks=blocks)

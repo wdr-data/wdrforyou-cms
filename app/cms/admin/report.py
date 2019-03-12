@@ -5,9 +5,11 @@ from posixpath import join as urljoin
 from django.contrib import admin, messages
 from django.db import transaction
 from django.utils import timezone
+from django.core.exceptions import ObjectDoesNotExist
 from django import forms
 from emoji_picker.widgets import EmojiPickerTextInput
 from emoji_picker.widgets import EmojiPickerTextarea
+
 import requests
 
 from ..models.report import Report, ReportTranslation
@@ -187,7 +189,10 @@ class ReportAdmin(AttachmentAdmin):
     def save_formset(self, request, form, formset, change):
         super().save_formset(request, form, formset, change)
         blocks = []
-        obj = formset.forms[0].instance.report
+        try:
+            obj = formset.forms[0].instance.report
+        except ObjectDoesNotExist:
+            return
 
         languages = [lang for lang in ['arabic', 'persian', 'english'] if getattr(obj, lang)]
         cms_url = re.sub(r'/add/$', f'/{obj.id}/change', request.build_absolute_uri())

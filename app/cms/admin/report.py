@@ -23,7 +23,7 @@ PUSH_TRIGGER_URL = urljoin(os.environ['BOT_SERVICE_ENDPOINT'], 'sendReport')
 class ReportTranslationModelForm(TranslationModelForm):
     class Meta:
         model = ReportTranslation
-        fields = ['language', 'text', 'link', 'media', 'media_original', 'media_note']
+        fields = ['language', 'published', 'delivered', 'text', 'link', 'media', 'media_original', 'media_note']
 
 
 class ReportTranslationInlineFormset(forms.models.BaseInlineFormSet):

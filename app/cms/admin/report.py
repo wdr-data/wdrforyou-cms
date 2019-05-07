@@ -156,10 +156,17 @@ class ReportAdmin(AttachmentAdmin):
             post_message(blocks=blocks)
 
         try:
-            if obj.published and not obj.delivered and not errors:
+            if not errors:
 
-                def commit_hook():
+                def commit_hook(id):
                     sleep(1)  # Wait for DB
+
+                    obj = Report.objects.get(id=id)
+
+                    if not (obj.published and not obj.delivered or
+                            any(t.published and not t.delivered for t in obj.translations.all())):
+                        return
+
                     r = requests.post(
                         url=PUSH_TRIGGER_URL,
                         json={'id': obj.id}
@@ -177,11 +184,7 @@ class ReportAdmin(AttachmentAdmin):
                     else:
                         messages.error(request, '🚨 Nachricht konnte nicht gesendet werden!')
 
-                transaction.on_commit(commit_hook)
-
-            elif obj.published and not obj.delivered and errors:
-                messages.warning(
-                    request, 'Nachricht wurde nicht versendet, da Fehler aufgetreten sind')
+                transaction.on_commit(lambda: commit_hook(obj.id))
 
         except Exception as e:
             messages.error(request, str(e))

@@ -163,8 +163,9 @@ class ReportAdmin(AttachmentAdmin):
 
                     obj = Report.objects.get(id=id)
 
-                    if not (obj.published and not obj.delivered or
-                            any(t.published and not t.delivered for t in obj.translations.all())):
+                    if not ((obj.published and not obj.delivered
+                             or any(t.published and not t.delivered for t in obj.translations.all()))
+                            and obj.published):
                         return
 
                     r = requests.post(

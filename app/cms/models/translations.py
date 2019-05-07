@@ -18,6 +18,11 @@ class Translation(Attachment):
             (ARABIC, 'Arabisch'),
             (PERSIAN, 'Persisch'),
             (ENGLISH, 'Englisch')])
+    published = models.BooleanField(
+        'Freigegeben', null=False, default=False,
+        help_text='Solange dieser Haken nicht gesetzt ist, wird diese Übersetzung nicht versendet und/oder angezeigt.')
+    delivered = models.BooleanField(
+        'Versendet', null=False, default=False)
     text = models.CharField('Text Übersetzung', max_length=628, null=False, blank=False)
     link = models.CharField(
         'Link', max_length=1024, null=True, blank=True,

@@ -6,11 +6,11 @@ from cms.models.report import ReportTranslation
 class ReportTranslationSerializer(serializers.ModelSerializer):
     class Meta:
         model = ReportTranslation
-        fields = ('id', 'language', 'text', 'link', 'media', 'media_original', 'media_note', )
+        fields = ('id', 'language', 'published', 'delivered', 'text', 'link', 'media', 'media_original', 'media_note', )
 
 
 class ReportTranslationViewSet(viewsets.ModelViewSet):
-    queryset = ReportTranslation.objects.all().order_by('id')
+    queryset = ReportTranslation.objects.filter(published=True).order_by('id')
     serializer_class = ReportTranslationSerializer
 
 
@@ -23,7 +23,7 @@ class ModelSerializerWithTranslations(serializers.ModelSerializer):
         rep = super().to_representation(obj)
 
         serializer = self.translation_serializer_class(many=True, read_only=True)
-        translations = obj.translations.all()
+        translations = obj.translations.filter(published=True)
 
         rep['translations'] = serializer.to_representation(translations)
         return rep

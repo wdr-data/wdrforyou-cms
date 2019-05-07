@@ -91,7 +91,7 @@ class ReportModelForm(forms.ModelForm):
 
     delivered = forms.BooleanField(
         label='Versendet',
-        help_text="Wurde diese Meldung bereits in einem Highlights-Push vom Bot versendet?",
+        help_text="Wurde diese Meldung bereits vom Bot versendet?",
         disabled=True,
         required=False)
 

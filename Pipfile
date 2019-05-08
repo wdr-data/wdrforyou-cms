@@ -17,6 +17,7 @@ pillow = "*"
 "django-s3direct" = "*"
 slackclient = "*"
 certifi = "*"
+idna-ssl = "*"
 
 [dev-packages]
 zappa = "*"

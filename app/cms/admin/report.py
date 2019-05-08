@@ -113,10 +113,27 @@ class ReportAdmin(AttachmentAdmin):
             language for language in ('english', 'arabic', 'persian')
             if getattr(obj, language)
         ]
-        translated_languages = [
-            t.language for t in obj.translations.all()
-        ]
-        return [('✅ ' if l in translated_languages else '❌ ') + l.capitalize() for l in languages]
+        translated_languages = {
+            t.language: t for t in obj.translations.all()
+        }
+
+        display = []
+        for lang in languages:
+
+            if lang not in translated_languages:
+                item = '❌️ '
+            elif translated_languages[lang].published:
+                item = '✅ '
+            else:
+                item = '✏️️ '
+
+            if lang in translated_languages and translated_languages[lang].delivered:
+                item = '📤' + item
+
+            item += lang.capitalize()
+            display.append(item)
+
+        return display
 
     def save_model(self, request, obj, form, change):
         super().save_model(request, obj, form, change)

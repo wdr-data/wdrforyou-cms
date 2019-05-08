@@ -121,13 +121,12 @@ class ReportAdmin(AttachmentAdmin):
 
             if lang not in translated_languages:
                 item = '❌️ '
+            elif translated_languages[lang].delivered:
+                item = '📤 '
             elif translated_languages[lang].published:
                 item = '✅ '
             else:
                 item = '✏️️ '
-
-            if lang in translated_languages and translated_languages[lang].delivered:
-                item = '📤' + item
 
             item += lang.capitalize()
             display.append(item)
@@ -135,13 +134,12 @@ class ReportAdmin(AttachmentAdmin):
         return display
 
     def deutsch(self, obj):
-        if obj.published:
+        if obj.delivered:
+            display = '📤 '
+        elif obj.published:
             display = '✅ '
         else:
             display = '✏️️ '
-
-        if obj.delivered:
-            display = '📤' + display
 
         return display
 

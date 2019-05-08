@@ -97,14 +97,13 @@ class ReportModelForm(forms.ModelForm):
 
     class Meta:
         model = Report
-        fields = ['published', 'delivered',
-                  'headline', 'arabic', 'persian', 'english', 'text', 'link',
-                  'media', 'media_original', 'media_note']
+        fields = ['headline', 'published', 'delivered', 'text', 'link',
+                  'media', 'media_original', 'media_note', 'arabic', 'persian', 'english',]
 
 
 class ReportAdmin(AttachmentAdmin):
     form = ReportModelForm
-    list_display = ('deutsch', 'headline', 'created', 'translations',)
+    list_display = ('created', 'headline', 'deutsch', 'translations',)
     list_display_links = ('headline',)
     inlines = (ReportTranslationAdminInline,)
 

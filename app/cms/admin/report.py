@@ -104,7 +104,7 @@ class ReportModelForm(forms.ModelForm):
 
 class ReportAdmin(AttachmentAdmin):
     form = ReportModelForm
-    list_display = ('published', 'delivered', 'headline', 'created', 'translations',)
+    list_display = ('deutsch', 'headline', 'created', 'translations',)
     list_display_links = ('headline',)
     inlines = (ReportTranslationAdminInline,)
 
@@ -132,6 +132,17 @@ class ReportAdmin(AttachmentAdmin):
 
             item += lang.capitalize()
             display.append(item)
+
+        return display
+
+    def deutsch(self, obj):
+        if obj.published:
+            display = '✅ '
+        else:
+            display = '✏️️ '
+
+        if obj.delivered:
+            display = '📤' + display
 
         return display
 

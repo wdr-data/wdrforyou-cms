@@ -19,7 +19,7 @@ class Report(Attachment):
 
     published = models.BooleanField(
         'Freigegeben', null=False, default=False,
-        help_text='Solange dieser Haken nicht gesetzt ist, wird diese Meldung nicht versendet.')
+        help_text='Solange dieser Haken nicht gesetzt ist, wird diese Meldung nicht versendet und/oder angezeigt.')
     delivered = models.BooleanField(
         'Versendet', null=False, default=False)
     created = models.DateTimeField(

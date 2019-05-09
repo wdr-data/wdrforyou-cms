@@ -23,47 +23,12 @@ PUSH_TRIGGER_URL = urljoin(os.environ['BOT_SERVICE_ENDPOINT'], 'sendReport')
 class ReportTranslationModelForm(TranslationModelForm):
     class Meta:
         model = ReportTranslation
-        fields = ['language', 'text', 'link', 'media', 'media_original', 'media_note']
+        fields = ['language', 'published', 'delivered', 'text', 'link', 'media', 'media_original', 'media_note']
 
 
 class ReportTranslationInlineFormset(forms.models.BaseInlineFormSet):
     def is_valid(self):
         return super().is_valid() and not any([bool(e) for e in self.errors])
-
-    def clean(self):
-
-        super().clean()
-
-        if not self.instance.published:
-            return
-
-        # get forms that actually have valid data
-        filled_translations = []
-
-        for form in self.forms:
-            try:
-                if form.cleaned_data and not form.cleaned_data.get('DELETE', False):
-                    filled_translations.append(form.cleaned_data['language'])
-            except AttributeError:
-                # annoyingly, if a subform is invalid Django explicity raises
-                # an AttributeError for cleaned_data
-                pass
-
-        required_translations = [
-            language for language in ('english', 'arabic', 'persian')
-            if getattr(self.instance, language)
-        ]
-
-        missing_translations = []
-
-        for required_translation in required_translations:
-            if required_translation not in filled_translations:
-                missing_translations.append(required_translation)
-
-        if missing_translations:
-            raise forms.ValidationError(
-                "Fehlende Übersetzungen: " +
-                ', '.join(l.capitalize() for l in missing_translations))
 
 
 class ReportTranslationAdminInline(TranslationAdminInline):
@@ -91,20 +56,19 @@ class ReportModelForm(forms.ModelForm):
 
     delivered = forms.BooleanField(
         label='Versendet',
-        help_text="Wurde diese Meldung bereits in einem Highlights-Push vom Bot versendet?",
+        help_text="Wurde diese Meldung bereits vom Bot versendet?",
         disabled=True,
         required=False)
 
     class Meta:
         model = Report
-        fields = ['published', 'delivered',
-                  'headline', 'arabic', 'persian', 'english', 'text', 'link',
-                  'media', 'media_original', 'media_note']
+        fields = ['headline', 'published', 'delivered', 'text', 'link',
+                  'media', 'media_original', 'media_note', 'arabic', 'persian', 'english',]
 
 
 class ReportAdmin(AttachmentAdmin):
     form = ReportModelForm
-    list_display = ('published', 'delivered', 'headline', 'created', 'translations',)
+    list_display = ('created', 'headline', 'deutsch', 'translations',)
     list_display_links = ('headline',)
     inlines = (ReportTranslationAdminInline,)
 
@@ -113,10 +77,36 @@ class ReportAdmin(AttachmentAdmin):
             language for language in ('english', 'arabic', 'persian')
             if getattr(obj, language)
         ]
-        translated_languages = [
-            t.language for t in obj.translations.all()
-        ]
-        return [('✅ ' if l in translated_languages else '❌ ') + l.capitalize() for l in languages]
+        translated_languages = {
+            t.language: t for t in obj.translations.all()
+        }
+
+        display = []
+        for lang in languages:
+
+            if lang not in translated_languages:
+                item = '❌️ '
+            elif translated_languages[lang].delivered:
+                item = '📤 '
+            elif translated_languages[lang].published:
+                item = '✅ '
+            else:
+                item = '✏️️ '
+
+            item += lang.capitalize()
+            display.append(item)
+
+        return display
+
+    def deutsch(self, obj):
+        if obj.delivered:
+            display = '📤 '
+        elif obj.published:
+            display = '✅ '
+        else:
+            display = '✏️️ '
+
+        return display
 
     def save_model(self, request, obj, form, change):
         super().save_model(request, obj, form, change)
@@ -156,10 +146,18 @@ class ReportAdmin(AttachmentAdmin):
             post_message(blocks=blocks)
 
         try:
-            if obj.published and not obj.delivered and not errors:
+            if not errors:
 
-                def commit_hook():
+                def commit_hook(id):
                     sleep(1)  # Wait for DB
+
+                    obj = Report.objects.get(id=id)
+
+                    if not ((obj.published and not obj.delivered
+                             or any(t.published and not t.delivered for t in obj.translations.all()))
+                            and obj.published):
+                        return
+
                     r = requests.post(
                         url=PUSH_TRIGGER_URL,
                         json={'id': obj.id}
@@ -177,11 +175,7 @@ class ReportAdmin(AttachmentAdmin):
                     else:
                         messages.error(request, '🚨 Nachricht konnte nicht gesendet werden!')
 
-                transaction.on_commit(commit_hook)
-
-            elif obj.published and not obj.delivered and errors:
-                messages.warning(
-                    request, 'Nachricht wurde nicht versendet, da Fehler aufgetreten sind')
+                transaction.on_commit(lambda: commit_hook(obj.id))
 
         except Exception as e:
             messages.error(request, str(e))

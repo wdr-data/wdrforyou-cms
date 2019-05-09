@@ -14,6 +14,12 @@ class TranslationModelForm(forms.ModelForm):
         widget=EmojiPickerTextarea,
         max_length=640)
 
+    delivered = forms.BooleanField(
+        label='Versendet',
+        help_text="Wurde diese Meldung bereits vom Bot versendet?",
+        disabled=True,
+        required=False)
+
 
 class TranslationAdminInline(DisplayImageWidgetStackedInline):
     image_display_fields = ['media']

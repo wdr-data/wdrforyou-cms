@@ -106,3 +106,9 @@ venv.bak/
 # Django static files
 /app/static
 /app/media/
+
+# macOSX
+.DS_Store
+
+# Pycharm project files
+.idea/

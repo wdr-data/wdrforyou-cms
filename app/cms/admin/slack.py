@@ -1,10 +1,10 @@
 import os
 
-from slackclient import SlackClient
+from slack import WebClient
 
 SLACK_TOKEN = os.environ.get('SLACK_BOT_TOKEN')
 CHANNEL = os.environ.get('SLACK_CHANNEL')
-CLIENT = SlackClient(SLACK_TOKEN)
+CLIENT = WebClient(SLACK_TOKEN)
 
 
 def section(text, type='mrkdwn'):
@@ -35,21 +35,19 @@ def divider():
     return {"type": "divider"}
 
 
-def post_message(*, private=False, channel=CHANNEL, **kwargs):
+def post_message(*, private='', channel=CHANNEL, **kwargs):
     """
     Send message with attachments to Slack on channel. Set 'private' to a user ID to send a message
     that only that user can see. Set 'channel' to a specific ID to send in a channel different from
     the default channel.
     """
     if not private:
-        return CLIENT.api_call(
-            'chat.postMessage',
+        return CLIENT.chat_postMessage(
             channel=channel,
             **kwargs,
         )
     else:
-        return CLIENT.api_call(
-            'chat.postEphemeral',
+        return CLIENT.chat_postEphemeral(
             channel=channel,
             user=private,
             **kwargs,

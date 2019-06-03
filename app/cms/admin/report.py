@@ -52,7 +52,7 @@ class ReportModelForm(forms.ModelForm):
         help_text="Hier nur die Meldung auf Deutsch eintragen. "
                   "Die Übersetzung zu anderen Sprachen wird weiter unten eingegeben, falls nötig.",
         widget=EmojiPickerTextarea,
-        max_length=640)
+        max_length=305)
 
     delivered = forms.BooleanField(
         label='Versendet',

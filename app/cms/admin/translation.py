@@ -12,7 +12,7 @@ class TranslationModelForm(forms.ModelForm):
         label="Text übersetzt",
         help_text="Hier nur den Meldungstext in der ausgewählten Sprache eintragen.",
         widget=EmojiPickerTextarea,
-        max_length=640)
+        max_length=305)
 
     delivered = forms.BooleanField(
         label='Versendet',

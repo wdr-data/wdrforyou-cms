@@ -176,6 +176,10 @@ if AWS_LAMBDA or CI:
 
     AWS_S3_BUCKET_AUTH = False
 
+    # Enable S3 file overwriting as temp fix for django-s3-storage
+    # (uploading processed images)
+    AWS_S3_FILE_OVERWRITE = True
+
 else:
     STATIC_URL = '/static/'
     STATIC_ROOT = os.path.join(BASE_DIR, STATIC_URL[1:])

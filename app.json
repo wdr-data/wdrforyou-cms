@@ -1,0 +1,19 @@
+{
+  "name": "Infosforyou CMS",
+  "description": "This app is the CMS part of Infosforyou",
+  "repository": "https://github.com/wdr-data/wdrforyou-cms",
+  "success_url": "/admin",
+  "scripts": {
+    "postdeploy": "python app/manage.py migrate"
+  },
+  "env": {},
+  "addons": ["heroku-postgresql:hobby-dev"],
+  "buildpacks": [
+    {
+      "url": "heroku/python"
+    },
+    {
+      "url": "https://github.com/heroku/heroku-buildpack-locale"
+    }
+  ]
+}

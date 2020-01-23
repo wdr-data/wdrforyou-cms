@@ -10,7 +10,6 @@ djangorestframework = "*"
 django-emoji-picker = "*"
 django-filter = "*"
 django-tz-detect = "*"
-"django-s3-storage" = "*"
 "psycopg2-binary" = "*"
 requests = "*"
 pillow = "*"
@@ -18,9 +17,13 @@ pillow = "*"
 slackclient = "*"
 certifi = "*"
 idna-ssl = "*"
+gunicorn = "*"
+django-storages = "*"
+whitenoise = "*"
+raven = "*"
+dj-database-url = "*"
 
 [dev-packages]
-zappa = "*"
 
 [requires]
-python_version = "3.6"
+python_version = "3.8"

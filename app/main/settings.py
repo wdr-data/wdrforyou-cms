@@ -11,10 +11,12 @@ https://docs.djangoproject.com/en/2.1/ref/settings/
 """
 
 import os
-
-# Build paths inside the project like this: os.path.join(BASE_DIR, ...)
+from urllib.parse import urlparse, unquote
 from os.path import splitext
 from uuid import uuid4
+
+import dj_database_url
+import raven
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -38,9 +40,6 @@ ALLOWED_HOSTS = ['*']
 if not DEBUG:
     SECURE_SSL_REDIRECT = True
 
-AWS_LAMBDA = os.environ.get('SERVERTYPE') == 'AWS Lambda'
-CI = os.environ.get('CI')
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -50,17 +49,19 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'django_s3_storage',  # Static files
+    'storages',
     'cms.apps.CmsConfig',
     'rest_framework',
     'django_filters',
     'tz_detect',
     'rest_framework.authtoken',
+    'raven.contrib.django.raven_compat',
     'emoji_picker',
     's3direct',
 ]
 
 MIDDLEWARE = [
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -102,16 +103,9 @@ DATABASES = {
     }
 }
 
-if AWS_LAMBDA:
+if os.environ.get('DATABASE_URL') is not None:
     DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql_psycopg2',
-            'NAME': os.environ['DB_NAME'],
-            'USER': os.environ['DB_USER'],
-            'PASSWORD': os.environ['DB_PASSWORD'],
-            'HOST': os.environ['DB_HOST'],
-            'PORT': '5432',
-        }
+        'default': dj_database_url.config()
     }
 
 
@@ -152,38 +146,27 @@ LOGIN_URL = '/admin/login'
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.1/howto/static-files/
 
-if AWS_LAMBDA or CI:
-    S3_BUCKET_NAME = os.environ['S3_BUCKET_NAME']
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, STATIC_URL[1:])
 
-    DEFAULT_FILE_STORAGE = 'django_s3_storage.storage.S3Storage'
-    STATICFILES_STORAGE = 'django_s3_storage.storage.ManifestStaticS3Storage'
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-    AWS_S3_BUCKET_NAME = S3_BUCKET_NAME
-    AWS_S3_BUCKET_NAME_STATIC = S3_BUCKET_NAME
+aws_url = os.environ.get('S3_MEDIA_URL')
+if aws_url is not None:
+    aws_creds = urlparse(aws_url)
+    DEFAULT_FILE_STORAGE = 'main.custom_storages.S3BotoRandomNameStorage'
+    AWS_ACCESS_KEY_ID = unquote(aws_creds.username)
+    AWS_SECRET_ACCESS_KEY = unquote(aws_creds.password)
+    AWS_STORAGE_BUCKET_NAME = aws_creds.hostname
+    AWS_AUTO_CREATE_BUCKET = False
+    AWS_QUERYSTRING_AUTH = False
+    AWS_S3_REGION_NAME = 'eu-central-1'
+    AWS_S3_ENDPOINT_URL = f'https://s3.{AWS_S3_REGION_NAME}.amazonaws.com'
 
-    # The AWS region to connect to.
-    AWS_REGION = "eu-central-1"
-
-    # Config for s3direct
-    AWS_S3_REGION_NAME = "eu-central-1"
-    AWS_S3_ENDPOINT_URL = f'https://{S3_BUCKET_NAME}.s3-{AWS_S3_REGION_NAME}.amazonaws.com'
-
-    # The AWS access key to use.
-    AWS_ACCESS_KEY_ID = os.environ['AWS_ACCESS_KEY_ID']
-
-    # The AWS secret access key to use.
-    AWS_SECRET_ACCESS_KEY = os.environ['AWS_SECRET_ACCESS_KEY']
-
-    AWS_S3_BUCKET_AUTH = False
-
-    # Enable S3 file overwriting as temp fix for django-s3-storage
-    # (uploading processed images)
-    AWS_S3_FILE_OVERWRITE = True
-
+    custom_domain = os.environ.get('S3_CUSTOM_DOMAIN')
+    if custom_domain:
+        AWS_S3_CUSTOM_DOMAIN = custom_domain
 else:
-    STATIC_URL = '/static/'
-    STATIC_ROOT = os.path.join(BASE_DIR, STATIC_URL[1:])
-
     MEDIA_URL = '/media/'
     MEDIA_ROOT = os.path.join(BASE_DIR, MEDIA_URL[1:])
 
@@ -200,32 +183,14 @@ REST_FRAMEWORK = {
 
 TZ_DETECT_COUNTRIES = ('DE', 'FR', 'GB', 'US', 'CN', 'IN', 'JP', 'BR', 'RU')
 
+sentry_dsn =  os.environ.get('SENTRY_DSN')
 
-AWS_ACCESS_KEY_ID = os.environ['AWS_ACCESS_KEY_ID']
-AWS_SECRET_ACCESS_KEY = os.environ['AWS_SECRET_ACCESS_KEY']
+if sentry_dsn is not None:
+    RAVEN_CONFIG = {
+        'dsn': sentry_dsn,
+    }
 
-AWS_STORAGE_BUCKET_NAME = os.environ['S3_BUCKET_NAME']
-
-# The region of your bucket, more info:
-# http://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region
-S3DIRECT_REGION = 'eu-central-1'
-
-# Destinations, with the following keys:
-#
-# key [required] Where to upload the file to, can be either:
-#     1. '/' = Upload to root with the original filename.
-#     2. 'some/path' = Upload to some/path with the original filename.
-#     3. functionName = Pass a function and create your own path/filename.
-# key_args [optional] Arguments to be passed to 'key' if it's a function.
-# auth [optional] An ACL function to whether the current Django user can perform this action.
-# allowed [optional] List of allowed MIME types.
-# acl [optional] Give the object another ACL rather than 'public-read'.
-# cache_control [optional] Cache control headers, eg 'max-age=2592000'.
-# content_disposition [optional] Useful for sending files as attachments.
-# bucket [optional] Specify a different bucket for this particular object.
-# server_side_encryption [optional] Encryption headers for buckets that require it.
-
-
+# S3Direct
 def generate_filename(fn):
     name, ext = splitext(fn)
     return f'{name}-{str(uuid4())}{ext}'
